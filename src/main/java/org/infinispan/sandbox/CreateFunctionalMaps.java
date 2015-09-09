@@ -24,4 +24,16 @@ public class CreateFunctionalMaps {
       rw = readWriteMap;
    }
 
+   public static <V> ReadOnlyMap<String, V> ro() {
+      return (ReadOnlyMap<String, V>) ro;
+   }
+
+   public static <V> WriteOnlyMap<String, V> wo() {
+      return (WriteOnlyMap<String, V>) wo;
+   }
+
+   public static <V> ReadWriteMap<String, V> rw() {
+      return (ReadWriteMap<String, V>) rw;
+   }
+
 }

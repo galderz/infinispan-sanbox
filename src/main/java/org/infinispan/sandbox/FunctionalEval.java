@@ -9,7 +9,7 @@ import org.infinispan.commons.api.functional.MetaParam.MetaLifespan;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
-public class SingleKeyOperations {
+public class FunctionalEval {
 
    public static void main( String[] args ) throws Exception {
       CreateFunctionalMaps.main(args);
