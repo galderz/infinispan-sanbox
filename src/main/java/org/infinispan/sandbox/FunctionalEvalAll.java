@@ -1,14 +1,16 @@
 package org.infinispan.sandbox;
 
-import org.infinispan.commons.api.functional.EntryView;
 import org.infinispan.commons.api.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
 import org.infinispan.commons.api.functional.FunctionalMap.ReadOnlyMap;
 import org.infinispan.commons.api.functional.FunctionalMap.ReadWriteMap;
 import org.infinispan.commons.api.functional.FunctionalMap.WriteOnlyMap;
 import org.infinispan.commons.api.functional.Traversable;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.joining;
 
@@ -50,7 +52,7 @@ public class FunctionalEvalAll {
          System.out.printf("After replacing, entries contain: %s%n", pairs);
       }).thenCompose(ignore ->
          // Use write-only evalAll to remove all entries, one by one
-         writeOnlyMap.evalAll(EntryView.WriteEntryView::remove)
+         writeOnlyMap.evalAll(WriteEntryView::remove)
       ).thenAccept(ignore -> {
          // Use read-only keys traversable to verify that the map is empty
          boolean isEmpty = !readOnlyMap.keys().findAny().isPresent();
