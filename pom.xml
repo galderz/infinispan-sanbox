@@ -12,19 +12,34 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <infinispan.version>9.0.0.Alpha4</infinispan.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-embedded</artifactId>
-      <version>8.2.2.Final</version>
+      <artifactId>infinispan-core</artifactId>
+      <version>${infinispan.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-query-dsl</artifactId>
+      <version>${infinispan.version}</version>
     </dependency>
     <dependency>
       <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-embedded-query</artifactId>
-      <version>8.2.2.Final</version>
+      <artifactId>infinispan-query</artifactId>
+      <version>${infinispan.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-client-hotrod</artifactId>
+      <version>${infinispan.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
