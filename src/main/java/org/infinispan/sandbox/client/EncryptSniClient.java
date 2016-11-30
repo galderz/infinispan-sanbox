@@ -21,7 +21,8 @@ public class EncryptSniClient {
                .enabled(true)
                .trustStoreFileName("src/main/resources/trust/truststore.jks")
                .trustStorePassword("secret".toCharArray())
-               .sniHostName("host1");
+               .sniHostName("host1")
+      ;
 
       RemoteCacheManager rcm = new RemoteCacheManager(clientBuilder.build());
       RemoteCache<Object, Object> cache = rcm.getCache();
