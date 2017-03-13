@@ -34,12 +34,44 @@ public class Cluster {
       }
    }
 
+   public static void withReplCluster(BiConsumer<EmbeddedCacheManager, EmbeddedCacheManager> task) {
+      ExecutorService exec = Executors.newCachedThreadPool();
+      Future<EmbeddedCacheManager> f1 = exec.submit(() -> Cluster.createReplClusteredCacheManager("data.1"));
+      Future<EmbeddedCacheManager> f2 = exec.submit(() -> Cluster.createReplClusteredCacheManager("data.2"));
+      try {
+         EmbeddedCacheManager cm1 = f1.get();
+         EmbeddedCacheManager cm2 = f2.get();
+         try {
+            System.out.println(cm1.getMembers());
+            System.out.println(cm2.getMembers());
+            task.accept(cm1, cm2);
+         } finally {
+            if (cm1 != null) cm1.stop();
+            if (cm2 != null) cm2.stop();
+            exec.shutdown();
+         }
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
+   }
+
    public static EmbeddedCacheManager createClusteredCacheManager(String domain) {
       GlobalConfigurationBuilder global = GlobalConfigurationBuilder.defaultClusteredBuilder();
       global.transport().addProperty("configurationFile", "jgroups-tcp-fastjoin.xml");
       global.globalJmxStatistics().jmxDomain(domain);
       ConfigurationBuilder builder = new ConfigurationBuilder();
       builder.clustering().cacheMode(CacheMode.DIST_SYNC).hash().numOwners(1);
+      EmbeddedCacheManager cm = new DefaultCacheManager(global.build(), builder.build());
+      cm.getCache();
+      return cm;
+   }
+
+   public static EmbeddedCacheManager createReplClusteredCacheManager(String domain) {
+      GlobalConfigurationBuilder global = GlobalConfigurationBuilder.defaultClusteredBuilder();
+      global.transport().addProperty("configurationFile", "jgroups-tcp-fastjoin.xml");
+      global.globalJmxStatistics().jmxDomain(domain);
+      ConfigurationBuilder builder = new ConfigurationBuilder();
+      builder.clustering().cacheMode(CacheMode.REPL_SYNC);
       EmbeddedCacheManager cm = new DefaultCacheManager(global.build(), builder.build());
       cm.getCache();
       return cm;
