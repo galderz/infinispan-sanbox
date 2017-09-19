@@ -1,8 +1,8 @@
 package org.infinispan.sandbox.old;
 
-import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
-import org.infinispan.commons.api.functional.FunctionalMap.WriteOnlyMap;
-import org.infinispan.commons.api.functional.MetaParam.MetaLifespan;
+import org.infinispan.functional.EntryView.WriteEntryView;
+import org.infinispan.functional.FunctionalMap.WriteOnlyMap;
+import org.infinispan.functional.MetaParam.MetaLifespan;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

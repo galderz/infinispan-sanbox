@@ -1,6 +1,6 @@
 package org.infinispan.sandbox;
 
-import org.infinispan.commons.api.functional.FunctionalMap.ReadWriteMap;
+import org.infinispan.functional.FunctionalMap.ReadWriteMap;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

@@ -1,7 +1,7 @@
 package org.infinispan.sandbox;
 
 import org.infinispan.AdvancedCache;
-import org.infinispan.commons.api.functional.FunctionalMap.*;
+import org.infinispan.functional.FunctionalMap.*;
 import org.infinispan.functional.impl.*;
 import org.infinispan.manager.DefaultCacheManager;
 

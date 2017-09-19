@@ -1,10 +1,10 @@
 package org.infinispan.sandbox;
 
-import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
-import org.infinispan.commons.api.functional.EntryView.WriteEntryView;
-import org.infinispan.commons.api.functional.FunctionalMap.ReadWriteMap;
-import org.infinispan.commons.api.functional.Listeners.ReadWriteListeners.ReadWriteListener;
-import org.infinispan.commons.api.functional.Traversable;
+import org.infinispan.functional.EntryView.ReadEntryView;
+import org.infinispan.functional.EntryView.WriteEntryView;
+import org.infinispan.functional.FunctionalMap.ReadWriteMap;
+import org.infinispan.functional.Listeners.ReadWriteListeners.ReadWriteListener;
+import org.infinispan.functional.Traversable;
 
 import java.util.HashMap;
 import java.util.Map;

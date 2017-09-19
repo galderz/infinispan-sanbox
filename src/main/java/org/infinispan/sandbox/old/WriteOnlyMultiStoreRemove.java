@@ -1,7 +1,7 @@
 package org.infinispan.sandbox.old;
 
-import org.infinispan.commons.api.functional.EntryView;
-import org.infinispan.commons.api.functional.FunctionalMap;
+import org.infinispan.functional.EntryView;
+import org.infinispan.functional.FunctionalMap;
 import org.infinispan.functional.impl.FunctionalMapImpl;
 import org.infinispan.functional.impl.ReadOnlyMapImpl;
 

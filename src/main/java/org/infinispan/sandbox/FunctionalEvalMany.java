@@ -1,14 +1,13 @@
 package org.infinispan.sandbox;
 
-import org.infinispan.commons.api.functional.EntryVersion;
-import org.infinispan.commons.api.functional.EntryVersion.NumericEntryVersion;
-import org.infinispan.commons.api.functional.EntryView.ReadEntryView;
-import org.infinispan.commons.api.functional.EntryView.ReadWriteEntryView;
-import org.infinispan.commons.api.functional.FunctionalMap.ReadOnlyMap;
-import org.infinispan.commons.api.functional.FunctionalMap.ReadWriteMap;
-import org.infinispan.commons.api.functional.FunctionalMap.WriteOnlyMap;
-import org.infinispan.commons.api.functional.MetaParam.MetaEntryVersion;
-import org.infinispan.commons.api.functional.Traversable;
+import org.infinispan.container.versioning.NumericVersion;
+import org.infinispan.functional.EntryView.ReadEntryView;
+import org.infinispan.functional.EntryView.ReadWriteEntryView;
+import org.infinispan.functional.FunctionalMap.ReadOnlyMap;
+import org.infinispan.functional.FunctionalMap.ReadWriteMap;
+import org.infinispan.functional.FunctionalMap.WriteOnlyMap;
+import org.infinispan.functional.MetaParam.MetaEntryVersion;
+import org.infinispan.functional.Traversable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +35,8 @@ public class FunctionalEvalMany {
       // Use multi-key write-only operation to store each key/value pair and
       // generate version metadata (to keep it simple, version generated is either `1` or `2`)
       CompletableFuture<Void> writeManyFuture = writeOnlyMap.evalMany(entries, (v, writeView) -> {
-         NumericEntryVersion version = new NumericEntryVersion((long) (Math.random() * 2 + 1));
-         writeView.set(v, new MetaEntryVersion<>(version));
+         NumericVersion version = new NumericVersion((long) (Math.random() * 2 + 1));
+         writeView.set(v, new MetaEntryVersion(version));
       });
 
       Set<String> keys = entries.keySet();
