@@ -15,7 +15,6 @@ public class Listeners {
       Cache<Object, Object> cache = manager.getCache("local");
 
       cache.addListener(new AnyListener<>());
-      cache.put(1, 1);
       cache.remove(1);
       Thread.sleep(2000);
    }
@@ -27,7 +26,7 @@ public class Listeners {
       public void removed(CacheEntryRemovedEvent<K, V> e) {
          // JCache listeners notified only once, so do it after the event
          if (!e.isPre())
-            System.out.printf("Removed: key=%s,value=%s,oldValue=%s%n", e.getKey(), e.getOldValue(), e.getOldValue());
+            System.out.printf("Removed: key=%s,value=%s,oldValue=%s%n", e.getKey(), e.getValue(), e.getOldValue());
       }
 
    }
