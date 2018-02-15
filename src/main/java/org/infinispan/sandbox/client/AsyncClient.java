@@ -21,6 +21,7 @@ public class AsyncClient {
          .putAsync("car", "ferrari")
          .thenCompose(prev -> cache.getAsync("car"))
          .thenAccept(v -> {
+            System.out.println("Value is " + v);
             assert v.equals("ferrari");
          });
 
