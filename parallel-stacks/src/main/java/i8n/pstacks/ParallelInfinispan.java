@@ -6,6 +6,7 @@ import org.infinispan.CacheCollection;
 import org.infinispan.CacheSet;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.container.DataContainer;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.filter.KeyFilter;
 import org.infinispan.health.Health;
@@ -18,11 +19,13 @@ import org.infinispan.remoting.transport.Transport;
 import org.infinispan.stats.CacheContainerStats;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -38,9 +41,10 @@ import java.util.function.Function;
 
 public class ParallelInfinispan {
 
-   ModuleLoader moduleLoader;
+   final Map<String, DataContainer> dataContainers;
+   final ModuleLoader moduleLoader;
 
-   public ParallelInfinispan() throws Exception {
+   public ParallelInfinispan(Map<String, DataContainer> dataContainers) throws Exception {
       final Path tmpdir = Files.createTempDirectory("repository");
       System.setProperty("maven.repo.local", tmpdir.toAbsolutePath().toString());
       System.setProperty("remote.maven.repo", "http://repository.jboss.org/nexus/content/groups/public/");
@@ -48,10 +52,12 @@ public class ParallelInfinispan {
 
       final File repoRoot = ModulesUtil.getResourceFile(StacksMain.class, "test/repo");
       moduleLoader = new LocalModuleLoader(new File[]{repoRoot});
+
+      this.dataContainers = dataContainers;
    }
 
-   public EmbeddedCacheManager cacheManager() throws Exception {
-      return new ParallelEmbeddedCacheManager();
+   public EmbeddedCacheManager cacheManager(String cfgFile) throws Exception {
+      return new ParallelEmbeddedCacheManager(cfgFile);
    };
 
    private final class ParallelEmbeddedCacheManager implements EmbeddedCacheManager {
@@ -59,9 +65,9 @@ public class ParallelInfinispan {
       ModuleIdentifier moduleId = ModuleIdentifier.fromString("sample.maven:91");
       final Module module;
 
-      final Object delegate;
+      final Object cacheManager;
 
-      private ParallelEmbeddedCacheManager() throws Exception {
+      private ParallelEmbeddedCacheManager(String cfgFile) throws Exception {
          module = moduleLoader.loadModule(moduleId);
 
          Thread.currentThread().setContextClassLoader(module.getClassLoader());
@@ -69,20 +75,22 @@ public class ParallelInfinispan {
          final Class<?> clazz = module.getClassLoader()
             .loadClass("org.infinispan.manager.DefaultCacheManager");
 
-         this.delegate = clazz.newInstance();
+         final Constructor<?> ctor = clazz.getConstructor(String.class);
 
-         final Object cfgBuilder = newConfigurationBuilder();
-         final Object cfg = invokeBuildOnConfigurationBuilder(cfgBuilder);
+         this.cacheManager = ctor.newInstance(cfgFile);
 
-         final Method[] ms = delegate.getClass().getDeclaredMethods();
-         final Method method = Arrays.stream(ms)
-            .filter(m ->
-               m.getName().equals("defineConfiguration")
-                  && m.getGenericParameterTypes().length == 2)
-            .findFirst()
-            .get();
-
-         method.invoke(delegate, "test", cfg);
+//         final Object cfgBuilder = newConfigurationBuilder();
+//         final Object cfg = invokeBuildOnConfigurationBuilder(cfgBuilder);
+//
+//         final Method[] ms = cacheManager.getClass().getDeclaredMethods();
+//         final Method method = Arrays.stream(ms)
+//            .filter(m ->
+//               m.getName().equals("defineConfiguration")
+//                  && m.getGenericParameterTypes().length == 2)
+//            .findFirst()
+//            .get();
+//
+//         method.invoke(cacheManager, "test", cfg);
       }
 
       Object newConfigurationBuilder() throws Exception {
@@ -253,7 +261,7 @@ public class ParallelInfinispan {
 
       @Override
       public <K, V> Cache<K, V> getCache(String cacheName) {
-         final Method[] ms = delegate.getClass().getDeclaredMethods();
+         final Method[] ms = cacheManager.getClass().getDeclaredMethods();
          final Method method = Arrays.stream(ms)
             .filter(m ->
                m.getName().equals("getCache")
@@ -262,8 +270,93 @@ public class ParallelInfinispan {
             .get();
 
          try {
-            return new ParallelCache(method.invoke(delegate, cacheName));
+            final Object cache = method.invoke(cacheManager, cacheName);
+            final ParallelCache parallelCache = new ParallelCache(cache);
+            replaceDataContainer(cache, dataContainers.get(cacheName));
+            return parallelCache;
          } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      private void replaceDataContainer(Object cache, DataContainer dc) {
+//         final Object advancedCache = invokeGetAdvancedCache(cache);
+         final Object componentRegistry = invokeGetComponentRegistry(cache);
+         invokeRegisterComponent(dc, componentRegistry);
+         invokeRewire(componentRegistry);
+      }
+
+//      private Object invokeGetAdvancedCache(Object cache) {
+//         final Method[] ms = cache.getClass().getDeclaredMethods();
+//         final Method method = Arrays.stream(ms)
+//            .filter(m ->
+//               m.getName().equals("getAdvancedCache")
+//                  && m.getGenericParameterTypes().length == 0)
+//            .findFirst()
+//            .get();
+//
+//         try {
+//            return method.invoke(cache);
+//         } catch (IllegalAccessException | InvocationTargetException e) {
+//            throw new RuntimeException(e);
+//         }
+//      }
+
+      private Object invokeGetComponentRegistry(Object advancedCache) {
+         final Method[] ms = advancedCache.getClass().getSuperclass().getDeclaredMethods();
+         final Method method = Arrays.stream(ms)
+            .filter(m ->
+               m.getName().equals("getComponentRegistry")
+                  && m.getGenericParameterTypes().length == 0)
+            .findFirst()
+            .get();
+
+         try {
+            return method.invoke(advancedCache);
+         } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      private void invokeRegisterComponent(DataContainer dc, Object componentRegistry) {
+         final Method[] ms = componentRegistry.getClass().getSuperclass().getDeclaredMethods();
+         final Method method = Arrays.stream(ms)
+            .filter(m ->
+               m.getName().equals("registerComponent")
+                  && m.getGenericParameterTypes().length == 2)
+            .findFirst()
+            .get();
+
+         try {
+            final ModuleClassLoader cl = module.getClassLoader();
+            final Class<?> clazz = cl
+               .loadClass("org.infinispan.container.DataContainer");
+
+            System.out.println(cl);
+            final Object proxy = DataContainerProxy.create(dc, clazz, cl);
+
+            System.out.println(proxy.getClass());
+            System.out.println(proxy.getClass().getClassLoader());
+            System.out.println(cl);
+            System.out.println(componentRegistry.getClass().getClassLoader());
+            method.invoke(componentRegistry, proxy, clazz);
+         } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+         }
+      }
+
+      private void invokeRewire(Object componentRegistry) {
+         final Method[] ms = componentRegistry.getClass().getSuperclass().getDeclaredMethods();
+         final Method method = Arrays.stream(ms)
+            .filter(m ->
+               m.getName().equals("rewire")
+                  && m.getGenericParameterTypes().length == 0)
+            .findFirst()
+            .get();
+
+         try {
+            method.invoke(componentRegistry);
+         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
          }
       }
@@ -297,10 +390,10 @@ public class ParallelInfinispan {
 
    private final class ParallelCache implements Cache {
 
-      final Object delegate;
+      final Object cache;
 
-      private ParallelCache(Object delegate) throws Exception {
-         this.delegate = delegate;
+      private ParallelCache(Object cache) throws Exception {
+         this.cache = cache;
       }
 
       @Override
@@ -365,7 +458,7 @@ public class ParallelInfinispan {
 
       @Override
       public Object get(Object key) {
-         final Method[] ms = delegate.getClass().getDeclaredMethods();
+         final Method[] ms = cache.getClass().getDeclaredMethods();
          final Method method = Arrays.stream(ms)
             .filter(m ->
                m.getName().equals("get")
@@ -374,7 +467,7 @@ public class ParallelInfinispan {
             .get();
 
          try {
-            return method.invoke(delegate, key);
+            return method.invoke(cache, key);
          } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
          }
@@ -462,7 +555,7 @@ public class ParallelInfinispan {
 
       @Override
       public Object put(Object key, Object value) {
-         final Method[] ms = delegate.getClass().getDeclaredMethods();
+         final Method[] ms = cache.getClass().getDeclaredMethods();
          final Method method = Arrays.stream(ms)
             .filter(m ->
                m.getName().equals("put")
@@ -471,7 +564,7 @@ public class ParallelInfinispan {
             .get();
 
          try {
-            return method.invoke(delegate, key, value);
+            return method.invoke(cache, key, value);
          } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
          }
