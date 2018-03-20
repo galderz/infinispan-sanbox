@@ -1,5 +1,6 @@
 package i8n.pstacks;
 
+import org.infinispan.Cache;
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -12,6 +13,14 @@ import java.nio.file.Path;
 public class StacksMain {
 
    public static void main(String[] args) throws Exception {
+      final ParallelInfinispan parallel = new ParallelInfinispan();
+      final Cache<Integer, String> cache = parallel.cacheManager().getCache("test");
+      cache.put(249, "Lugia");
+      System.out.println(cache.get(249));
+   }
+
+   @SuppressWarnings("unused")
+   private static void testParallelClassLoading() throws Exception {
       final File repoRoot = ModulesUtil.getResourceFile(StacksMain.class, "test/repo");
       ModuleLoader moduleLoader = new LocalModuleLoader(new File[]{repoRoot});
 
