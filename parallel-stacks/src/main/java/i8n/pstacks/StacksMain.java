@@ -25,6 +25,12 @@ public class StacksMain {
 
       final Class<?> clazz = module.getClassLoader().loadClass("org.infinispan.commons.api.BasicCache");
       System.out.println(clazz);
+
+      ModuleIdentifier moduleId91 = ModuleIdentifier.fromString("sample.maven:91");
+      Module module91 = moduleLoader.loadModule(moduleId91);
+
+      final Class<?> clazz91 = module91.getClassLoader().loadClass("org.infinispan.commons.api.BasicCache");
+      System.out.println(clazz91);
    }
 
 }
