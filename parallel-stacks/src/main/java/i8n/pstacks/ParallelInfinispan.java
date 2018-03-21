@@ -17,19 +17,13 @@ import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.stats.CacheContainerStats;
-import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -42,17 +36,10 @@ import java.util.function.Function;
 public class ParallelInfinispan {
 
    final Map<String, DataContainer> dataContainers;
-   final ModuleLoader moduleLoader;
+   final Module module;
 
-   public ParallelInfinispan(Map<String, DataContainer> dataContainers) throws Exception {
-      final Path tmpdir = Files.createTempDirectory("repository");
-      System.setProperty("maven.repo.local", tmpdir.toAbsolutePath().toString());
-      System.setProperty("remote.maven.repo", "http://repository.jboss.org/nexus/content/groups/public/");
-      System.setProperty("jboss.modules.system.pkgs", "javax,sun");
-
-      final File repoRoot = ModulesUtil.getResourceFile(StacksMain.class, "test/repo");
-      moduleLoader = new LocalModuleLoader(new File[]{repoRoot});
-
+   public ParallelInfinispan(Module module, Map<String, DataContainer> dataContainers) {
+      this.module = module;
       this.dataContainers = dataContainers;
    }
 
@@ -62,56 +49,14 @@ public class ParallelInfinispan {
 
    private final class ParallelEmbeddedCacheManager implements EmbeddedCacheManager {
 
-      ModuleIdentifier moduleId = ModuleIdentifier.fromString("sample.maven:91");
-      final Module module;
-
       final Object cacheManager;
 
       private ParallelEmbeddedCacheManager(String cfgFile) throws Exception {
-         module = moduleLoader.loadModule(moduleId);
-
-         Thread.currentThread().setContextClassLoader(module.getClassLoader());
-
          final Class<?> clazz = module.getClassLoader()
             .loadClass("org.infinispan.manager.DefaultCacheManager");
 
          final Constructor<?> ctor = clazz.getConstructor(String.class);
-
          this.cacheManager = ctor.newInstance(cfgFile);
-
-//         final Object cfgBuilder = newConfigurationBuilder();
-//         final Object cfg = invokeBuildOnConfigurationBuilder(cfgBuilder);
-//
-//         final Method[] ms = cacheManager.getClass().getDeclaredMethods();
-//         final Method method = Arrays.stream(ms)
-//            .filter(m ->
-//               m.getName().equals("defineConfiguration")
-//                  && m.getGenericParameterTypes().length == 2)
-//            .findFirst()
-//            .get();
-//
-//         method.invoke(cacheManager, "test", cfg);
-      }
-
-      Object newConfigurationBuilder() throws Exception {
-         final Class<?> clazz = module.getClassLoader()
-            .loadClass("org.infinispan.configuration.cache.ConfigurationBuilder");
-
-         return clazz.newInstance();
-      }
-
-      Object invokeBuildOnConfigurationBuilder(Object obj) throws Exception {
-         final Class<?> clazz = module.getClassLoader()
-            .loadClass("org.infinispan.configuration.cache.ConfigurationBuilder");
-         final Method[] ms = clazz.getDeclaredMethods();
-         final Method method = Arrays.stream(ms)
-            .filter(m ->
-               m.getName().equals("build")
-                  && m.getGenericParameterTypes().length == 0)
-            .findFirst()
-            .get();
-
-         return method.invoke(obj);
       }
 
       @Override
@@ -286,22 +231,6 @@ public class ParallelInfinispan {
          invokeRewire(componentRegistry);
       }
 
-//      private Object invokeGetAdvancedCache(Object cache) {
-//         final Method[] ms = cache.getClass().getDeclaredMethods();
-//         final Method method = Arrays.stream(ms)
-//            .filter(m ->
-//               m.getName().equals("getAdvancedCache")
-//                  && m.getGenericParameterTypes().length == 0)
-//            .findFirst()
-//            .get();
-//
-//         try {
-//            return method.invoke(cache);
-//         } catch (IllegalAccessException | InvocationTargetException e) {
-//            throw new RuntimeException(e);
-//         }
-//      }
-
       private Object invokeGetComponentRegistry(Object advancedCache) {
          final Method[] ms = advancedCache.getClass().getSuperclass().getDeclaredMethods();
          final Method method = Arrays.stream(ms)
@@ -323,7 +252,9 @@ public class ParallelInfinispan {
          final Method method = Arrays.stream(ms)
             .filter(m ->
                m.getName().equals("registerComponent")
-                  && m.getGenericParameterTypes().length == 2)
+                  && m.getParameterTypes().length == 2
+                  && m.getParameterTypes()[0] == Object.class
+                  && m.getParameterTypes()[1] == Class.class)
             .findFirst()
             .get();
 
@@ -335,10 +266,6 @@ public class ParallelInfinispan {
             System.out.println(cl);
             final Object proxy = DataContainerProxy.create(dc, clazz, cl);
 
-            System.out.println(proxy.getClass());
-            System.out.println(proxy.getClass().getClassLoader());
-            System.out.println(cl);
-            System.out.println(componentRegistry.getClass().getClassLoader());
             method.invoke(componentRegistry, proxy, clazz);
          } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
             throw new RuntimeException(e);
