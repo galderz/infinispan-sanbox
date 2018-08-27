@@ -11,12 +11,12 @@ public class Main {
 
       builder
          .addServer()
-            .host("localhost").port(11332)
+            .host("localhost").port(11332) // site1-node1
          .addServer()
-            .host("localhost").port(11342)
+            .host("localhost").port(11342) // site1-node2
          .addCluster("site2")
-            .addClusterNode("localhost", 11432)
-            .addClusterNode("localhost", 11442);
+            .addClusterNode("localhost", 11432) // site2-node1
+            .addClusterNode("localhost", 11442); // site2-node2
 
       RemoteCacheManager remote = new RemoteCacheManager(builder.build());
 
