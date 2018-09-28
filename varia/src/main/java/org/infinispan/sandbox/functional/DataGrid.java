@@ -11,12 +11,9 @@ public final class DataGrid {
    private DataGrid() {
    }
 
-   public static Function<ConfigurationBuilder, RemoteCacheManager> withRemoteCacheManager() {
-      return createRemoteCacheManager();
-   }
-
-   private static Function<ConfigurationBuilder, RemoteCacheManager> createRemoteCacheManager() {
+   public static Function<ConfigurationBuilder, RemoteCacheManager> createRemoteCacheManager() {
       return new Function<ConfigurationBuilder, RemoteCacheManager>() {
+
          RemoteCacheManager remoteCacheManager;
 
          @Override
@@ -27,17 +24,16 @@ public final class DataGrid {
          }
 
          @Override
-         public <V> Function<ConfigurationBuilder, Void> andThenConsume(Consumer<? super RemoteCacheManager> after) {
+         public Consumer<ConfigurationBuilder> andThenConsume(Consumer<? super RemoteCacheManager> after) {
             Objects.requireNonNull(after);
 
             return cfg -> {
                try {
                   after.accept(apply(cfg));
-                  return null;
                } finally {
                   try {
-                     System.out.println("Called destroy");
                      this.remoteCacheManager.stop();
+                     System.out.println("Called destroy");
                   } catch (Throwable throwable) {
                      // ignore
                   }
@@ -50,12 +46,11 @@ public final class DataGrid {
 
    public interface Function<T, R> extends java.util.function.Function<T, R> {
 
-      default <V> Function<T, Void> andThenConsume(Consumer<? super R> after) {
+      default Consumer<T> andThenConsume(Consumer<? super R> after) {
          Objects.requireNonNull(after);
 
          return (T t) -> {
             after.accept(apply(t));
-            return null;
          };
       }
       

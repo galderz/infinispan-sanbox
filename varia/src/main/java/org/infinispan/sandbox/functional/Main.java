@@ -23,9 +23,9 @@ public class Main {
       };
 
       DataGrid
-         .withRemoteCacheManager()
+         .createRemoteCacheManager()
          .andThenConsume(testOk)
-         .apply(builder);
+         .accept(builder);
 
       Consumer<RemoteCacheManager> testFail = remoteCacheManager -> {
          System.out.println("Throwing exception...");
@@ -33,9 +33,9 @@ public class Main {
       };
 
       DataGrid
-         .withRemoteCacheManager()
+         .createRemoteCacheManager()
          .andThenConsume(testFail)
-         .apply(builder);
+         .accept(builder);
    }
 
 }
