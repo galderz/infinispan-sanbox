@@ -5,7 +5,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 public class Main {
 
@@ -15,26 +15,26 @@ public class Main {
          .addServer().host("127.0.0.1").port(11222)
          .clientIntelligence(ClientIntelligence.BASIC);
 
-      Function<RemoteCacheManager, Void> testOk = remoteCacheManager -> {
+      Consumer<RemoteCacheManager> testOk = remoteCacheManager -> {
          RemoteCache<String, String> cache = remoteCacheManager.getCache();
          cache.put("hello", "world");
          final String value = cache.get("hello");
          System.out.printf("Value is: %s%n", value);
-
-         return null;
       };
 
       DataGrid
-         .withRemoteCacheManager().andThen(testOk)
+         .withRemoteCacheManager()
+         .andThenConsume(testOk)
          .apply(builder);
 
-      Function<RemoteCacheManager, Void> testFail = remoteCacheManager -> {
+      Consumer<RemoteCacheManager> testFail = remoteCacheManager -> {
          System.out.println("Throwing exception...");
          throw new RuntimeException("boo");
       };
 
       DataGrid
-         .withRemoteCacheManager().andThen(testFail)
+         .withRemoteCacheManager()
+         .andThenConsume(testFail)
          .apply(builder);
    }
 
