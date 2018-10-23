@@ -7,6 +7,7 @@ import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
+import org.infinispan.client.hotrod.impl.ClientStatistics;
 import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
 import org.infinispan.client.hotrod.impl.operations.AddClientListenerOperation;
 import org.infinispan.client.hotrod.impl.operations.OperationsFactory;
@@ -96,7 +97,7 @@ public class ClientListenerParamOverride {
             , ChannelFactory channelFactory
             , ClientListenerNotifier listenerNotifier
       ) {
-         super(delegate.getRemoteCacheManager(), name);
+         super(delegate.getRemoteCacheManager(), name, (ClientStatistics) null);
          this.cfg = cfg;
          this.channelFactory = channelFactory;
          this.listenerNotifier = listenerNotifier;
@@ -115,7 +116,7 @@ public class ClientListenerParamOverride {
          final OperationsFactory operationsFactory =
             new OperationsFactory(channelFactory, getName(), false
                , new ExtendedCodec28(overrides, CodecFactory.getCodec(cfg.version()))
-               , listenerNotifier, cfg);
+               , listenerNotifier, cfg, null);
 
          AddClientListenerOperation op = operationsFactory.newAddClientListenerOperation(
             listener, marshalledFilterParams, marshalledConverterParams,
