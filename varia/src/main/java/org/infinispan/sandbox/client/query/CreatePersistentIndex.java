@@ -41,7 +41,7 @@ public class CreatePersistentIndex {
       "\toptional int32 f2 = 2;\n" +
       "}\n";
 
-   public static final String DATA_CACHE_NAME = "persistent-data";
+   public static final String DATA_CACHE_NAME = "test-persistent-indexed";
 
    public static void main(String[] args) {
       ConfigurationBuilder cfg = new ConfigurationBuilder();
@@ -136,14 +136,14 @@ public class CreatePersistentIndex {
                      "<file-store " +
                         "shared=\"false\" " +
                         "fetch-state=\"true\" " +
-                        "path=\"${jboss.server.data.dir}/datagrid-infinispan/%1$s\" " +
+                        "path=\"${jboss.server.data.dir}/datagrid-infinispan/%4$s\" " +
                         "preload=\"%3$s\" " +
                      "/>" +
                   "</persistence>" +
                "</%2$s-cache>" +
             "</cache-container>" +
          "</infinispan>",
-         cacheName, cacheMode, preload
+         cacheName, cacheMode, preload, DATA_CACHE_NAME
       );
    }
 
