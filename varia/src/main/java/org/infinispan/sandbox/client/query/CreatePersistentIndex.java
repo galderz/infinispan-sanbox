@@ -41,9 +41,9 @@ public class CreatePersistentIndex {
       "\toptional int32 f2 = 2;\n" +
       "}\n";
 
-   public static void main(String[] args) {
-      String dataCacheName = "persistent-data";
+   public static final String DATA_CACHE_NAME = "persistent-data";
 
+   public static void main(String[] args) {
       ConfigurationBuilder cfg = new ConfigurationBuilder();
       cfg.marshaller(new ProtoStreamMarshaller());
       RemoteCacheManager cacheContainer = new RemoteCacheManager(cfg.build());
@@ -53,9 +53,9 @@ public class CreatePersistentIndex {
       createIndexLockingCache(cacheContainer);
       createIndexMetadataCache(cacheContainer);
       createIndexDataCache(cacheContainer);
-      createDataCache(dataCacheName, cacheContainer);
+      createDataCache(DATA_CACHE_NAME, cacheContainer);
 
-      final RemoteCache<String, AnalyzerTestEntity> cache = cacheContainer.getCache(dataCacheName);
+      final RemoteCache<String, AnalyzerTestEntity> cache = cacheContainer.getCache(DATA_CACHE_NAME);
       assertNotNull(cache);
 
       cache.put("analyzed1", new AnalyzerTestEntity("tested 123", 3));
