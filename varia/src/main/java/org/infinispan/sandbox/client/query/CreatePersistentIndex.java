@@ -41,7 +41,10 @@ public class CreatePersistentIndex {
       "\toptional int32 f2 = 2;\n" +
       "}\n";
 
-   public static final String DATA_CACHE_NAME = "test-persistent-indexed";
+   static final String DATA_CACHE_NAME = "test-persistent-indexed";
+   private static final String INDEX_LOCKING_CACHE_NAME = "test-persistent-indexed-locking";
+   private static final String INDEX_METADATA_CACHE_NAME = "test-persistent-indexed-metadata";
+   private static final String INDEX_DATA_CACHE_NAME = "test-persistent-indexed-data";
 
    public static void main(String[] args) {
       ConfigurationBuilder cfg = new ConfigurationBuilder();
@@ -53,7 +56,7 @@ public class CreatePersistentIndex {
       createIndexLockingCache(cacheContainer);
       createIndexMetadataCache(cacheContainer);
       createIndexDataCache(cacheContainer);
-      createDataCache(DATA_CACHE_NAME, cacheContainer);
+      createDataCache(cacheContainer);
 
       final RemoteCache<String, AnalyzerTestEntity> cache = cacheContainer.getCache(DATA_CACHE_NAME);
       assertNotNull(cache);
@@ -72,16 +75,18 @@ public class CreatePersistentIndex {
       assertEquals(2, list.size());
    }
 
-   private static void createDataCache(String dataCacheName, RemoteCacheManager cacheContainer) {
+   private static void createDataCache(RemoteCacheManager cacheContainer) {
+      String dataCacheName = DATA_CACHE_NAME;
+
       String xml = String.format(
          "<infinispan>" +
             "<cache-container>" +
                "<distributed-cache name=\"%1$s\">" +
                   "<indexing index=\"LOCAL\">" +
                      "<property name=\"default.indexmanager\">org.infinispan.query.indexmanager.InfinispanIndexManager</property>" +
-                     "<property name=\"default.metadata_cachename\">persistent-indexed-metadata</property>" +
-                     "<property name=\"default.data_cachename\">persistent-indexed-data</property>" +
-                     "<property name=\"default.locking_cachename\">persistent-indexed-locking</property>" +
+                     "<property name=\"default.locking_cachename\">%2$s</property>" +
+                     "<property name=\"default.metadata_cachename\">%3$s</property>" +
+                     "<property name=\"default.data_cachename\">%4$s</property>" +
                   "</indexing>" +
                   "<persistence passivation=\"false\">" +
                      "<file-store " +
@@ -92,7 +97,7 @@ public class CreatePersistentIndex {
                "</distributed-cache>" +
             "</cache-container>" +
          "</infinispan>",
-         dataCacheName
+         dataCacheName, INDEX_LOCKING_CACHE_NAME, INDEX_METADATA_CACHE_NAME, INDEX_DATA_CACHE_NAME
       );
       System.out.printf("Data cache XML: %n%s%n", prettyXml(xml));
 
@@ -100,7 +105,7 @@ public class CreatePersistentIndex {
    }
 
    private static void createIndexLockingCache(RemoteCacheManager cacheContainer) {
-      String cacheName = "persistent-index-locking";
+      final String cacheName = INDEX_LOCKING_CACHE_NAME;
 
       String xml = indexCacheXml("replicated", false, cacheName);
       System.out.printf("Index locking cache XML: %n%s%n", prettyXml(xml));
@@ -109,7 +114,7 @@ public class CreatePersistentIndex {
    }
 
    private static void createIndexMetadataCache(RemoteCacheManager cacheContainer) {
-      String cacheName = "persistent-index-metadata";
+      final String cacheName = INDEX_METADATA_CACHE_NAME;
 
       String xml = indexCacheXml("replicated", true, cacheName);
       System.out.printf("Index metadata cache XML: %n%s%n", prettyXml(xml));
@@ -118,7 +123,7 @@ public class CreatePersistentIndex {
    }
 
    private static void createIndexDataCache(RemoteCacheManager cacheContainer) {
-      String cacheName = "persistent-index-data";
+      String cacheName = INDEX_DATA_CACHE_NAME;
 
       String xml = indexCacheXml("distributed", false, cacheName);
       System.out.printf("Index metadata cache XML: %n%s%n", prettyXml(xml));
@@ -175,7 +180,7 @@ public class CreatePersistentIndex {
       }
    }
 
-   public static void initProtoSchema(RemoteCacheManager remoteCacheManager) {
+   static void initProtoSchema(RemoteCacheManager remoteCacheManager) {
       // initialize server-side serialization context
       RemoteCache<String, String> metadataCache = remoteCacheManager.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
       metadataCache.put("custom_analyzer.proto", CUSTOM_ANALYZER_PROTO_SCHEMA);
@@ -195,7 +200,7 @@ public class CreatePersistentIndex {
    /**
     * Logs the Protobuf schema errors (if any) and fails the test if there are schema errors.
     */
-   public static void checkSchemaErrors(RemoteCache<String, String> metadataCache) {
+   private static void checkSchemaErrors(RemoteCache<String, String> metadataCache) {
       if (metadataCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX)) {
          // The existence of this key indicates there are errors in some files
          String files = metadataCache.get(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX);
