@@ -5,8 +5,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class InfinispanUtil {
 
@@ -15,53 +14,34 @@ public class InfinispanUtil {
    private InfinispanUtil() {
    }
 
-   public static Function<ConfigurationBuilder, RemoteCacheManager> createRemoteCacheManager() {
-      return new Function<ConfigurationBuilder, RemoteCacheManager>() {
-
-         RemoteCacheManager remoteCacheManager;
-
-         @Override
-         public RemoteCacheManager apply(ConfigurationBuilder cfg) {
-            System.out.println("Called create");
-            this.remoteCacheManager = new RemoteCacheManager(cfg.build());
-            return this.remoteCacheManager;
-         }
-
-         @Override
-         public Consumer<ConfigurationBuilder> andThenConsume(Consumer<? super RemoteCacheManager> after) {
-            Objects.requireNonNull(after);
-
-            return cfg -> {
-               try {
-                  after.accept(apply(cfg));
-               } catch (Throwable t) {
-                  System.err.println("Unexpected exception");
-                  t.printStackTrace();
-                  throw t;
-               } finally {
-                  try {
-                     System.out.println("Stopping remote cache manager");
-                     this.remoteCacheManager.stop();
-                     System.out.println("Stopped remote cache manager");
-                  } catch (Throwable throwable) {
-                     // ignore
-                  }
-               }
-            };
-         }
-
-      };
+   public static LazyRemoteCacheManager lazyRemoteCacheManager() {
+      return new AutoCloseableFunctionImpl();
    }
 
-   public interface Function<T, R> extends java.util.function.Function<T, R> {
+   private static final class AutoCloseableFunctionImpl implements LazyRemoteCacheManager {
 
-      default Consumer<T> andThenConsume(Consumer<? super R> after) {
-         Objects.requireNonNull(after);
+      RemoteCacheManager remoteCacheManager;
 
-         return (T t) -> {
-            after.accept(apply(t));
-         };
+      @Override
+      public RemoteCacheManager apply(ConfigurationBuilder cfg) {
+         System.out.println("Called create");
+         this.remoteCacheManager = new RemoteCacheManager(cfg.build());
+         return this.remoteCacheManager;
       }
+
+      @Override
+      public void close() {
+         System.out.println("Calling stop...");
+         remoteCacheManager.stop();
+         System.out.println("Stopped");
+      }
+
+   }
+
+   public interface LazyRemoteCacheManager extends Function<ConfigurationBuilder, RemoteCacheManager>, AutoCloseable {
+
+      @Override
+      void close();
 
    }
    
