@@ -28,10 +28,22 @@ public class MgmtViaDmr {
 
       final Operations ops = new Operations(onlineClient);
 
-      ModelNodeResult result = ops.readAttribute(Address.root(), Constants.SERVER_STATE);
-      result.assertDefinedValue();
+      ModelNodeResult serverState = ops.readAttribute(Address.root(), Constants.SERVER_STATE);
+      serverState.assertDefinedValue();
 
-      System.out.println("Server state is: " + result.stringValue());
+      System.out.println("Server state is: " + serverState.stringValue());
+
+      ModelNodeResult numOwners = ops.readAttribute(
+         Address.subsystem("datagrid-infinispan")
+            .and("cache-container", "clustered")
+            .and("configurations", "CONFIGURATIONS")
+            .and("distributed-cache-configuration", "default")
+         , "owners"
+      );
+
+      numOwners.assertDefinedValue();
+
+      System.out.println("Num owners is: " + numOwners.stringValue());
    }
 
 }
