@@ -44,6 +44,8 @@ public class MgmtViaDmr {
       numOwners.assertDefinedValue();
 
       System.out.println("Num owners is: " + numOwners.stringValue());
+
+      onlineClient.close();
    }
 
 }
