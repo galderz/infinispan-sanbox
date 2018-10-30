@@ -13,7 +13,7 @@ public class MgmtViaCmdLine {
                "--commands=\"/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)\""
       );
 
-      System.out.println(result);
+      System.out.println(result.getOutput());
    }
 
 }
