@@ -127,10 +127,9 @@
                <configuration>
                   <executable>java</executable>
                   <arguments>
-                     <argument>-Dnode0.ip=datagrid-service-management</argument>
                      <argument>-classpath</argument>
                      <classpath />
-                     <argument>org.infinispan.sandbox.dmr.MgmtViaDmr</argument>
+                     <argument>org.infinispan.sandbox.management.MgmtViaCmdLine</argument>
                   </arguments>
                </configuration>
             </plugin>

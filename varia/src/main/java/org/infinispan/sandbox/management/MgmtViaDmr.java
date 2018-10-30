@@ -1,4 +1,4 @@
-package org.infinispan.sandbox.dmr;
+package org.infinispan.sandbox.management;
 
 import org.wildfly.extras.creaper.core.ManagementClient;
 import org.wildfly.extras.creaper.core.online.Constants;
