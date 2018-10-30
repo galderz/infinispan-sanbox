@@ -7,13 +7,15 @@ oc project myproject
 
 APP=app
 
+docker pull fabric8/s2i-java:2.3
+
 # || true to make it idempotent
 oc new-build \
   --binary \
   --strategy=source \
   --name=${APP} \
   -l app=${APP} \
-  fabric8/s2i-java:2.3 \
+  --docker-image="registry.hub.docker.com/fabric8/s2i-java:2.3" \
   || true
 
 mvn clean package compile -DincludeScope=runtime
