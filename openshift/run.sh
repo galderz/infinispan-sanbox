@@ -2,13 +2,6 @@
 
 set -e
 
-if [ "$#" -ne 2 ]
-then
-  echo "Usage: run.sh [create-cache|get-cache] NAME"
-  exit 1
-fi
-
-
 oc delete all --selector=run=app || true
 
 getImageName() {
@@ -18,9 +11,7 @@ getImageName() {
 oc run app \
   --image=$(getImageName) \
   --replicas=1 \
-  --restart=OnFailure \
-  --env CMD=$1 \
-  --env NAME=$2
+  --restart=OnFailure
 
 
 getPodStatus() {
