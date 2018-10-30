@@ -21,6 +21,14 @@ public class CommandlineClient {
       public String getOutput() {
          return output;
       }
+
+      @Override
+      public String toString() {
+         return "Result{" +
+            "errorCode=" + errorCode +
+            ", output='" + output + '\'' +
+            '}';
+      }
    }
 
    public Result invokeAndReturnResult(String command) {
