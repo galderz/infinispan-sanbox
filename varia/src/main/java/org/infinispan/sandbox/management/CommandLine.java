@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Function;
 
-public final class CommandlineClient {
+public final class CommandLine {
 
    public static final class Ok {
 
@@ -58,6 +58,19 @@ public final class CommandlineClient {
          sb.append(line).append("\n");
       }
       return sb.toString();
+   }
+
+   public static Function<Either<Err, Ok>, Ok> throwIfError() {
+      return result -> {
+         switch (result.type()) {
+            case LEFT:
+               throw result.left().error;
+            case RIGHT:
+               return result.right();
+            default:
+               throw new IllegalStateException("No other possible type: " + result.type());
+         }
+      };
    }
 
 }
