@@ -12,6 +12,9 @@ public class MgmtViaCmdLine {
       final int cacheServiceNumOwnersMethod2 = numOwnersMethod2("cache-service-0");
       System.out.println("[cache-service] Num owners (method 2) is: " + cacheServiceNumOwnersMethod2);
 
+      assert cacheServiceNumOwnersMethod1 == cacheServiceNumOwnersMethod2
+         : "Both methods should return same number of owners. Method 1 (" + cacheServiceNumOwnersMethod1 + ") != Method 2 (" + cacheServiceNumOwnersMethod2 + ")";
+
       final int datagridServiceNumOwnersMethod1 = numOwnersMethod1("datagrid-service-0");
       System.out.println("[datagrid-service] Num owners (method 1) is: " + datagridServiceNumOwnersMethod1);
 
