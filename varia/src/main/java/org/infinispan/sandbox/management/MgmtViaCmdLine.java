@@ -46,7 +46,7 @@ public class MgmtViaCmdLine {
       return CommandLine.invoke()
          .andThen(CommandLine.throwIfError())
          .andThen(CommandLine.toMgmtResult())
-         .andThen(ModelNode::asInt)
+         .andThen(CommandLine.asIntResult())
          .apply(
             String.format(
                "oc exec " +

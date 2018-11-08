@@ -54,7 +54,7 @@ public final class CommandLine {
       };
    }
 
-   public static Function<Ok, ModelNode> toMgmtResult() {
+   public static Function<Ok, ModelNodeResult> toMgmtResult() {
       return ok -> {
          System.out.printf("Received result:%n%s%n", ok.output);
 
@@ -62,6 +62,16 @@ public final class CommandLine {
             new ModelNodeResult(ModelNode.fromString(ok.output));
          result.assertDefinedValue();
          return result;
+      };
+   }
+
+   public static Function<ModelNodeResult, Integer> asIntResult() {
+      return result -> {
+         // ModelNode.asInt might not the operation's result as int,
+         // hence this helper method to make sure it returns the result as int
+         final String stringValue = result.stringValue();
+         System.out.printf("String value: %s%n", stringValue);
+         return Integer.parseInt(stringValue);
       };
    }
 
