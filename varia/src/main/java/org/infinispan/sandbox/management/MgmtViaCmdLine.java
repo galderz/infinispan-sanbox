@@ -30,10 +30,10 @@ public class MgmtViaCmdLine {
          .apply(
             String.format(
                "oc exec " +
-                  " -it %s " +
-                  " -- /opt/datagrid/bin/cli.sh " +
-                  " --connect " +
-                  " --commands=/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)"
+                  "-it %s " +
+                  "-- /opt/datagrid/bin/cli.sh " +
+                  "--connect " +
+                  "--commands=/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)"
                , podName
             )
          );
@@ -47,10 +47,10 @@ public class MgmtViaCmdLine {
          .apply(
             String.format(
                "oc exec " +
-                  " -it %s " +
-                  " -- /opt/datagrid/bin/cli.sh " +
-                  " --connect " +
-                  " --commands=/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)"
+                  "-it %s " +
+                  "-- /opt/datagrid/bin/cli.sh " +
+                  "--connect " +
+                  "--commands=/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)"
                , podName
             )
          );
