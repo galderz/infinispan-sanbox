@@ -128,8 +128,8 @@
                   <executable>java</executable>
                   <arguments>
                      <argument>-classpath</argument>
-                     <argument>-ea</argument>
                      <classpath />
+                     <argument>-ea</argument>
                      <argument>org.infinispan.sandbox.management.MgmtViaCmdLine</argument>
                   </arguments>
                </configuration>
