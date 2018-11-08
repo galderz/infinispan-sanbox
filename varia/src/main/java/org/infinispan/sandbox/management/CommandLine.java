@@ -1,6 +1,8 @@
 package org.infinispan.sandbox.management;
 
 import org.infinispan.commons.util.Either;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.extras.creaper.core.online.ModelNodeResult;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,6 +49,17 @@ public final class CommandLine {
          } catch (Exception e) {
             return Either.newLeft(new Err(-1, new RuntimeException(e)));
          }
+      };
+   }
+
+   public static Function<Ok, ModelNode> toMgmtResult() {
+      return ok -> {
+         System.out.printf("Received result:%n%s%n", ok.output);
+
+         final ModelNodeResult result =
+            new ModelNodeResult(ModelNode.fromString(ok.output));
+         result.assertDefinedValue();
+         return result;
       };
    }
 
