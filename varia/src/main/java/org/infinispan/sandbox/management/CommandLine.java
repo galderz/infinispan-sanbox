@@ -37,6 +37,8 @@ public final class CommandLine {
    public static Function<String, Either<Err, Ok>> invoke() {
       return cmd -> {
          try {
+            System.out.printf("Invoking on command line: '%s'%n", cmd);
+
             ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
             Process p = pb.start();
             int resultCode = p.waitFor();
