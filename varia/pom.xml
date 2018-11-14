@@ -130,7 +130,7 @@
                      <argument>-classpath</argument>
                      <classpath />
                      <argument>-ea</argument>
-                     <argument>org.infinispan.sandbox.management.MgmtViaCmdLine</argument>
+                     <argument>org.infinispan.sandbox.management.MgmtViaOpenShiftCmdLine</argument>
                   </arguments>
                </configuration>
             </plugin>

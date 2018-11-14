@@ -3,7 +3,7 @@ package org.infinispan.sandbox.management;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extras.creaper.core.online.ModelNodeResult;
 
-public class MgmtViaCmdLine {
+public class MgmtViaOpenShiftCmdLine {
 
    public static void main(String[] args) {
       final int cacheServiceNumOwnersMethod1 = numOwnersMethod1("cache-service-0");
