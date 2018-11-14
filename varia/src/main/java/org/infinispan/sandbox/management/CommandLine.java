@@ -8,7 +8,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public final class CommandLine {
 
@@ -63,6 +65,13 @@ public final class CommandLine {
          result.assertDefinedValue();
          return result.value();
       };
+   }
+
+   public static Function<ModelNode, List<String>> toStringList() {
+      return result ->
+         result.asList().stream()
+            .map(ModelNode::asString)
+            .collect(Collectors.toList());
    }
 
    private static String getStream(InputStream stream) throws IOException {
