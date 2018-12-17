@@ -33,8 +33,8 @@ public class MgmtViaOpenShiftCmdLine {
          .apply(
             String.format(
                "oc exec " +
-                  "-it %s " +
-                  "-- /opt/datagrid/bin/cli.sh " +
+                  "%s " +
+                  "-- /opt/datagrid/bin/ispn-cli.sh " +
                   "--connect " +
                   "--commands=/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)"
                , podName
@@ -50,8 +50,8 @@ public class MgmtViaOpenShiftCmdLine {
          .apply(
             String.format(
                "oc exec " +
-                  "-it %s " +
-                  "-- /opt/datagrid/bin/cli.sh " +
+                  "%s " +
+                  "-- /opt/datagrid/bin/ispn-cli.sh " +
                   "--connect " +
                   "--commands=/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)"
                , podName
