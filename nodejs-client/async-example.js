@@ -1,5 +1,8 @@
 const infinispan = require("infinispan");
 
+const log4js = require('log4js');
+log4js.configure('example-log4js.json');
+
 async function test() {
     await new Promise((resolve, reject) => setTimeout(() => resolve(), 1000));
     console.log('Hello, World!');
